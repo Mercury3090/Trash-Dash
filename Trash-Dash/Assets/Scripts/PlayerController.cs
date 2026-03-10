@@ -5,25 +5,24 @@ using UnityEngine.SceneManagement;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 6f;
+    public float moveSpeed = 7f;
     public float jumpForce = 12f;
     public float climbSpeed = 4f;
-    public float normalGravity = 3f;
+    public float normalGravity = 4f;
 
-    [Header("Ground Check")]
+    [Header("Checks")]
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
     public LayerMask groundLayer;
 
-    [Header("Ladder Check")]
     public Transform ladderCheck;
-    public float ladderCheckRadius = 0.3f;
+    public float ladderCheckRadius = 0.25f;
     public LayerMask ladderLayer;
 
     [Header("Health")]
     public int maxHealth = 3;
-    private int currentHealth;
 
+    private int currentHealth;
     private Rigidbody2D rb;
     private PlayerInputActions inputActions;
 
@@ -32,17 +31,12 @@ public class PlayerController : MonoBehaviour
     private bool isOnLadder;
     private bool isClimbing;
 
-    private Transform currentPlatform;
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         inputActions = new PlayerInputActions();
 
-        inputActions.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-
-        inputActions.Player.Jump.performed += ctx => TryJump();
+        inputActions.Player.Jump.performed += ctx => Jump();
     }
 
     private void Start()
@@ -63,25 +57,33 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        moveInput = inputActions.Player.Move.ReadValue<Vector2>();
+
         CheckGround();
         CheckLadder();
-        HandleLadder();
+        UpdateClimbingState();
     }
 
     private void FixedUpdate()
     {
-        if (!isClimbing)
+        HandleMovement();
+    }
+
+    private void HandleMovement()
+    {
+        if (isClimbing)
         {
-            Move();
+            rb.gravityScale = 0f;
+            rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, moveInput.y * climbSpeed);
+        }
+        else
+        {
+            rb.gravityScale = normalGravity;
+            rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
         }
     }
 
-    private void Move()
-    {
-        rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
-    }
-
-    private void TryJump()
+    private void Jump()
     {
         if (isGrounded && !isClimbing)
         {
@@ -99,7 +101,7 @@ public class PlayerController : MonoBehaviour
         isOnLadder = Physics2D.OverlapCircle(ladderCheck.position, ladderCheckRadius, ladderLayer);
     }
 
-    private void HandleLadder()
+    private void UpdateClimbingState()
     {
         if (isOnLadder && Mathf.Abs(moveInput.y) > 0.1f)
         {
@@ -108,41 +110,6 @@ public class PlayerController : MonoBehaviour
         else if (!isOnLadder)
         {
             isClimbing = false;
-        }
-
-        if (isClimbing)
-        {
-            rb.gravityScale = 0f;
-            rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, moveInput.y * climbSpeed);
-        }
-        else
-        {
-            rb.gravityScale = normalGravity;
-        }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.transform.CompareTag("MovingPlatform"))
-        {
-            foreach (ContactPoint2D contact in collision.contacts)
-            {
-                if (contact.normal.y > 0.5f)
-                {
-                    transform.SetParent(collision.transform);
-                    currentPlatform = collision.transform;
-                    break;
-                }
-            }
-        }
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.transform == currentPlatform)
-        {
-            transform.SetParent(null);
-            currentPlatform = null;
         }
     }
 
