@@ -12,9 +12,9 @@ TagManager:
   - Ground
   - Water
   - UI
+  - 
   - Ladder
-  - 
-  - 
+  - Player
   - 
   - 
   - 
@@ -47,6 +47,9 @@ TagManager:
     locked: 0
   - name: Map
     uniqueID: 2627620761
+    locked: 0
+  - name: Player
+    uniqueID: 1836156021
     locked: 0
   m_RenderingLayers:
   - Default

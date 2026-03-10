@@ -6,23 +6,23 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed = 7f;
-    public float jumpForce = 12f;
+    public float jumpForce = 10f;
     public float climbSpeed = 4f;
     public float normalGravity = 4f;
 
-    [Header("Checks")]
-    public Transform groundCheck;
-    public float groundCheckRadius = 0.2f;
-    public LayerMask groundLayer;
+    [Header("Jump Feel")]
+    public float fallMultiplier = 2.5f;
+    public float lowJumpMultiplier = 3f;
 
-    public Transform ladderCheck;
-    public float ladderCheckRadius = 0.25f;
-    public LayerMask ladderLayer;
+    [Header("Ground Check")]
+    public Transform groundCheck;
+    public float groundCheckRadius = 0.1f;
+    public LayerMask groundLayer;
 
     [Header("Health")]
     public int maxHealth = 3;
-
     private int currentHealth;
+
     private Rigidbody2D rb;
     private PlayerInputActions inputActions;
 
@@ -30,13 +30,23 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool isOnLadder;
     private bool isClimbing;
+    private bool jumpHeld;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         inputActions = new PlayerInputActions();
 
-        inputActions.Player.Jump.performed += ctx => Jump();
+        inputActions.Player.Jump.performed += ctx =>
+        {
+            jumpHeld = true;
+            TryJump();
+        };
+
+        inputActions.Player.Jump.canceled += ctx =>
+        {
+            jumpHeld = false;
+        };
     }
 
     private void Start()
@@ -58,15 +68,22 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         moveInput = inputActions.Player.Move.ReadValue<Vector2>();
-
         CheckGround();
-        CheckLadder();
-        UpdateClimbingState();
+
+        if (isOnLadder && Mathf.Abs(moveInput.y) > 0.1f)
+        {
+            isClimbing = true;
+        }
+        else if (!isOnLadder)
+        {
+            isClimbing = false;
+        }
     }
 
     private void FixedUpdate()
     {
         HandleMovement();
+        HandleBetterJump();
     }
 
     private void HandleMovement()
@@ -74,7 +91,7 @@ public class PlayerController : MonoBehaviour
         if (isClimbing)
         {
             rb.gravityScale = 0f;
-            rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, moveInput.y * climbSpeed);
+            rb.linearVelocity = new Vector2(0f, moveInput.y * climbSpeed);
         }
         else
         {
@@ -83,7 +100,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Jump()
+    private void HandleBetterJump()
+    {
+        if (isClimbing)
+            return;
+
+        if (rb.linearVelocity.y < 0f)
+        {
+            rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1f) * Time.fixedDeltaTime;
+        }
+        else if (rb.linearVelocity.y > 0f && !jumpHeld)
+        {
+            rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1f) * Time.fixedDeltaTime;
+        }
+    }
+
+    private void TryJump()
     {
         if (isGrounded && !isClimbing)
         {
@@ -96,20 +128,23 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     }
 
-    private void CheckLadder()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        isOnLadder = Physics2D.OverlapCircle(ladderCheck.position, ladderCheckRadius, ladderLayer);
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ladder"))
+        {
+            isOnLadder = true;
+            Debug.Log("Entered ladder");
+        }
     }
 
-    private void UpdateClimbingState()
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        if (isOnLadder && Mathf.Abs(moveInput.y) > 0.1f)
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ladder"))
         {
-            isClimbing = true;
-        }
-        else if (!isOnLadder)
-        {
+            isOnLadder = false;
             isClimbing = false;
+            rb.gravityScale = normalGravity;
+            Debug.Log("Exited ladder");
         }
     }
 
@@ -136,12 +171,6 @@ public class PlayerController : MonoBehaviour
         {
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        }
-
-        if (ladderCheck != null)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(ladderCheck.position, ladderCheckRadius);
         }
     }
 }
