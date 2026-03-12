@@ -9,9 +9,21 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 6d036a35970cb4244836e35300672ccc
+  - enabled: 1
     path: Assets/Scenes/The Apartment.unity
     guid: 047ed152f1ba3b241b3cabbeffb6cc15
+  - enabled: 1
+    path: Assets/Scenes/The Playground.unity
+    guid: 09469dc7857639f46bc1c52efcc0e263
+  - enabled: 1
+    path: Assets/Scenes/The Dump.unity
+    guid: 79af37049c979f749bdd1dc22c0ac14d
+  - enabled: 1
+    path: Assets/Scenes/End.unity
+    guid: 737715653ee3ce84384e292448d9dba4
   m_configObjects:
-    com.unity.input.settings: {fileID: 11400000, guid: 40029f35ecb161348a1a5a9afcc214de, type: 2}
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+    com.unity.input.settings: {fileID: 11400000, guid: 892d3fac587b4e749bb1f3013763eddc, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 14bf4c943dcce2e4686010d718f4e4b8, type: 3}
   m_UseUCBPForAssetBundles: 0

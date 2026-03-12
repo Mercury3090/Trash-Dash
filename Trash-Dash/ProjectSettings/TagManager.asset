@@ -12,7 +12,7 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
+  - Wall
   - Ladder
   - Player
   - 
@@ -42,6 +42,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Background1
+    uniqueID: 2265496773
+    locked: 0
   - name: Background
     uniqueID: 3383880657
     locked: 0
@@ -50,6 +53,9 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 1836156021
+    locked: 0
+  - name: Main Player
+    uniqueID: 1329503753
     locked: 0
   m_RenderingLayers:
   - Default
