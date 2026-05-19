@@ -30,6 +30,12 @@ public class GameMenuManager : MonoBehaviour
     public void StartGame()
     {
         Time.timeScale = 1f;
+
+        if (LevelTimer.Instance != null)
+        {
+            LevelTimer.Instance.ResetTimer();
+        }
+
         SceneManager.LoadScene("The Apartment");
     }
 
@@ -38,6 +44,11 @@ public class GameMenuManager : MonoBehaviour
         isPaused = true;
         pauseMenuPanel.SetActive(true);
         Time.timeScale = 0f;
+
+        if (LevelTimer.Instance != null)
+        {
+            LevelTimer.Instance.PauseTimer();
+        }
     }
 
     public void ResumeGame()
@@ -45,6 +56,11 @@ public class GameMenuManager : MonoBehaviour
         isPaused = false;
         pauseMenuPanel.SetActive(false);
         Time.timeScale = 1f;
+
+        if (LevelTimer.Instance != null)
+        {
+            LevelTimer.Instance.ResumeTimer();
+        }
     }
 
     public void Back()
@@ -55,6 +71,12 @@ public class GameMenuManager : MonoBehaviour
     public void Restart()
     {
         Time.timeScale = 1f;
+
+        if (LevelTimer.Instance != null)
+        {
+            LevelTimer.Instance.ResetTimer();
+        }
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

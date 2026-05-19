@@ -13,24 +13,35 @@ public class MovingSpike : MonoBehaviour
 
     private bool growing = true;
     private float waitTimer;
+
     private Vector3 originalScale;
+    private float fixedBottomY;
+
+    private SpriteRenderer sr;
 
     void Start()
     {
+        sr = GetComponent<SpriteRenderer>();
         originalScale = transform.localScale;
 
-        transform.localScale = new Vector3(
-            originalScale.x,
-            minHeight,
-            originalScale.z
-        );
+        if (sr == null)
+        {
+            Debug.LogError("MovingSpike needs a SpriteRenderer on the same object.");
+            return;
+        }
 
+        // Store the world-space bottom of the sprite
+        fixedBottomY = sr.bounds.min.y;
+
+        SetSpikeHeight(minHeight);
         waitTimer = waitAtBottom;
     }
 
     void Update()
     {
-        if (waitTimer > 0)
+        if (sr == null) return;
+
+        if (waitTimer > 0f)
         {
             waitTimer -= Time.deltaTime;
             return;
@@ -61,11 +72,23 @@ public class MovingSpike : MonoBehaviour
             }
         }
 
+        SetSpikeHeight(currentHeight);
+    }
+
+    private void SetSpikeHeight(float newHeight)
+    {
+        // Apply new Y scale
         transform.localScale = new Vector3(
             originalScale.x,
-            currentHeight,
+            newHeight,
             originalScale.z
         );
+
+        // After scaling, get the sprite's current bottom in world space
+        float currentBottomY = sr.bounds.min.y;
+
+        // Move the object so the bottom stays where it started
+        float difference = fixedBottomY - currentBottomY;
+        transform.position += new Vector3(0f, difference, 0f);
     }
 }
-

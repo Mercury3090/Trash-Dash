@@ -1,10 +1,9 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class EndOfLevel : MonoBehaviour
 {
-    public float delay = 1.5f;
+    public float delay = 0.5f;
     private bool levelEnding = false;
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -18,17 +17,40 @@ public class EndOfLevel : MonoBehaviour
         if (player != null)
         {
             levelEnding = true;
-            StartCoroutine(FinishLevel());
+            StartCoroutine(FinishLevel(player));
         }
     }
 
-    IEnumerator FinishLevel()
+    IEnumerator FinishLevel(PlayerController player)
     {
         Debug.Log("Level Complete!");
 
+        LevelTimer timer = FindFirstObjectByType<LevelTimer>();
+        LevelCompleteUI levelCompleteUI = FindFirstObjectByType<LevelCompleteUI>();
+
+        float finalTime = 0f;
+        int stars = 1;
+
+        if (timer != null)
+        {
+            timer.StopTimer();
+            finalTime = timer.CurrentTime;
+            stars = timer.GetStarRating();
+        }
+        else
+        {
+            Debug.LogWarning("No LevelTimer found in scene.");
+        }
+
         yield return new WaitForSeconds(delay);
 
-        int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
-        SceneManager.LoadScene(nextScene);
+        if (levelCompleteUI != null)
+        {
+            levelCompleteUI.ShowResults(finalTime, stars);
+        }
+        else
+        {
+            Debug.LogWarning("No LevelCompleteUI found in scene.");
+        }
     }
 }
